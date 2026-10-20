@@ -1,0 +1,148 @@
+<Window x:Class="MacroRecorder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MacroRecorder - Automação de Mouse"
+        Width="880" Height="560" MinWidth="720" MinHeight="460"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BgBrush}">
+
+    <!-- ============================================================
+         Layout geral: barra superior (título + novo), DataGrid central
+         e painel INLINE de configuração (aparece ao criar automação).
+         ============================================================ -->
+    <DockPanel Margin="16">
+
+        <!-- ================= TOOLBAR SUPERIOR ================= -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}"
+                CornerRadius="10" Padding="16,12" Margin="0,0,0,12">
+            <Grid>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock Text="🖱 MacroRecorder" FontSize="20" FontWeight="Bold"
+                               Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock Text="Grave cliques e arrastos, dispare com atalhos globais"
+                               FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <Button x:Name="BtnNewAutomation" Content="＋ Mapear Nova Automação"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Click="BtnNewAutomation_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- ================= STATUS RODAPÉ ================= -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource PanelBrush}"
+                CornerRadius="10" Padding="14,8" Margin="0,12,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse x:Name="StatusDot" Width="10" Height="10" Fill="{StaticResource MutedBrush}"
+                         VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock x:Name="TxtStatus" Text="Pronto. Nenhuma gravação em andamento."
+                           Foreground="{StaticResource TextBrush}" FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ================= PAINEL INLINE DE CONFIGURAÇÃO ================= -->
+        <!-- Visível apenas durante o mapeamento de uma nova automação -->
+        <Border x:Name="ConfigPanel" DockPanel.Dock="Top" Visibility="Collapsed"
+                Background="{StaticResource PanelBrush}" CornerRadius="10" Padding="16,12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Linha 1: Nome -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Nome:" FontSize="13"
+                           Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                <TextBox x:Name="TxtName" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                         Text="Minha Automação" Margin="0,0,0,8"/>
+
+                <!-- Linha 2: Atalho (preview em tempo real + validação colorida) -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Atalho:" FontSize="13"
+                           Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                <Border Grid.Row="1" Grid.Column="1" CornerRadius="8" Background="#1B1B28"
+                        BorderThickness="1" BorderBrush="#3A3A55" Margin="0,0,8,8" Padding="4">
+                    <TextBox x:Name="TxtHotkey" IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                             Text="Pressione um atalho... (ex: Ctrl+Shift+1)"
+                             Foreground="{StaticResource MutedBrush}" FontSize="14" FontWeight="SemiBold"
+                             PreviewKeyDown="TxtHotkey_PreviewKeyDown"/>
+                </Border>
+                <TextBlock x:Name="TxtHotkeyHint" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                           Text="" FontSize="11" VerticalAlignment="Center" Margin="0,0,0,8"/>
+
+                <!-- Linha 3: Ações do painel -->
+                <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <!-- Botão gravar: só habilita quando o atalho for válido (regra de negócio) -->
+                    <Button x:Name="BtnRecord" Content="⏺ Gravar Automação"
+                            Background="{StaticResource DangerBrush}" IsEnabled="False"
+                            Margin="0,0,8,0" Click="BtnRecord_Click"/>
+                    <Button x:Name="BtnCancelConfig" Content="Cancelar"
+                            Background="#44445C" Click="BtnCancelConfig_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= LISTA DE AUTOMAÇÕES ================= -->
+        <DataGrid x:Name="GridAutomations" AutoGenerateColumns="False" IsReadOnly="True"
+                  HeadersVisibility="Column" GridLinesVisibility="None"
+                  Background="{StaticResource PanelBrush}" RowBackground="{StaticResource PanelBrush}"
+                  AlternatingRowBackground="#2C2C42" BorderThickness="1" BorderBrush="#3A3A55"
+                  Foreground="{StaticResource TextBrush}" RowHeight="40" FontSize="13"
+                  CanUserAddRows="False" SelectionMode="Single">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#1B1B28"/>
+                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+                    <Setter Property="Padding" Value="12,8"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="BorderBrush" Value="#3A3A55"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="12,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nome da Automação" Binding="{Binding Name}" Width="2*"/>
+                <DataGridTextColumn Header="Atalho de Teclado"  Binding="{Binding HotkeyText}" Width="1.4*"/>
+                <DataGridTextColumn Header="Eventos"            Binding="{Binding EventCount}" Width="0.6*"/>
+                <DataGridTextColumn Header="Data de Criação"    Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="1.2*"/>
+
+                <!-- Coluna de AÇÕES com botões por linha -->
+                <DataGridTemplateColumn Header="Ações" Width="1.6*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="▶ Testar" FontSize="11" Padding="8,4" Margin="0,0,6,0"
+                                        Background="{StaticResource SuccessBrush}"
+                                        Click="BtnPlayRow_Click" Tag="{Binding}"/>
+                                <Button Content="🗑 Excluir" FontSize="11" Padding="8,4"
+                                        Background="#5A2E35"
+                                        Click="BtnDeleteRow_Click" Tag="{Binding}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

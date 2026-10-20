@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ============================================================
+       MacroRecorder - Automação de Mouse com Hotkeys Globais
+       Framework: .NET 8 / WPF
+       ============================================================ -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>MacroRecorder</AssemblyName>
+    <RootNamespace>MacroRecorder</RootNamespace>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Ícone personalizado do aplicativo e do System Tray -->
+    <ApplicationIcon>Icons\app.ico</ApplicationIcon>
+
+    <!-- Manifest: soliciitação de elevação (admin) para hooks/SendInput -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- Metadados -->
+    <Version>1.0.0</Version>
+    <Authors>MacroRecorder</Authors>
+    <Description>Gravador de macros de mouse com atalhos globais de teclado</Description>
+
+    <!-- Permite compilar o projeto WPF também a partir de Linux/macOS (CI) -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!-- Evita avisos de API não suportada em chamadas P/Invoke -->
+    <NoWarn>$(NoWarn);CA1416;CS8618</NoWarn>
+
+    <!-- ================= CONFIGURAÇÕES DE PUBLICAÇÃO =================
+         Permitem rodar apenas: dotnet publish -c Release
+         (as flags abaixo já viram padrão do projeto)                    -->
+    <RuntimeIdentifier Condition="'$(PublishSingleFile)' == 'true'">win-x64</RuntimeIdentifier>
+    <SelfContained Condition="'$(PublishSingleFile)' == 'true'">true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract Condition="'$(PublishSingleFile)' == 'true'">true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</EnableCompressionInSingleFile>
+    <DebugType Condition="'$(PublishSingleFile)' == 'true'">none</DebugType>
+  </PropertyGroup>
+
+  <!-- O JSON de automações é criado em tempo de execução ao lado do .exe.
+       O ícone é embutido no executável (não precisa ser copiado). -->
+  <ItemGroup>
+    <!-- Cópia física do .ico ao lado do .exe: usada pelo System Tray -->
+    <Content Include="Icons\app.ico">
+      <Link>app.ico</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
